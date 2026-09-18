@@ -1,0 +1,25 @@
+#!/bin/bash
+# Bootstraps a tiny demo app on the application port (goes out via the NAT Gateway).
+
+set -euxo pipefail
+
+dnf install -y nginx
+
+cat >/etc/nginx/conf.d/app.conf <<CONF
+server {
+    listen ${app_port};
+
+    location = /health {
+        access_log off;
+        default_type text/plain;
+        return 200 "healthy";
+    }
+
+    location / {
+        default_type text/plain;
+        return 200 "hello from the private subnet";
+    }
+}
+CONF
+
+systemctl enable --now nginx
